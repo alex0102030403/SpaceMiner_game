@@ -12,35 +12,78 @@ function CraftingPlace(props: any){
     }
 
     const craftingRecipies = {
-        rocket:{
-            name: 'Rocket',
-            ingredients: ['Iron', 'Copper', 'Aluminium'],
-            ammount: [2, 1, 3],
-            img: 'rocket.png'
+        gold:{
+            name: 'Gold',
+            ingredients: ['Gold'],
+            ammount: [10],
+            img: 'rocket.png',
+            result: 'Gold_Ingot'
         },
-        sword:{
-            name: 'Sword',
-            ingredients: ['Iron', 'Copper'],
-            ammount: [2, 1],    
-            img: 'sword.png'
+        iron:{
+            name: 'Iron',
+            ingredients: ['Iron'],
+            ammount: [10],    
+            img: 'sword.png',
+            result: 'Iron_Ingot'
         },
-        pickaxe:{
-            name: 'Drill',
-            ingredients: ['Iron', 'Copper'],
-            ammount: [3, 2],
-            img: 'pickaxe.png'
+        copper:{
+            name: 'Copper',
+            ingredients: ['Copper'],
+            ammount: [10],
+            img: 'pickaxe.png',
+            result: 'Copper_Ingot'
         },
+        aluminium:{
+            name: 'Aluminiu',
+            ingredients: ['Aluminium'],
+            ammount: [10],
+            img: 'pickaxe.png',
+            result: 'Aluminium_Ingot'
+        },
+
     }
 
     const craftingRecipiesArray = Object.values(craftingRecipies);
 
-    function handleClick(name: string){
-        console.log('Crafted');
-        //get items from local storage
-        let items = JSON.parse(localStorage.getItem('items') || '[]');
-        //get recipie
+    function handleClick(name: string): React.MouseEventHandler<HTMLButtonElement> {
+        return (event) => {
+            //console.log('Crafted');
+            //get items from local storage
+            let items = JSON.parse(localStorage.getItem('inventory'));
+            console.log(items);
+    
+            //remove ingredients
+            let recipie;
 
-        props.setMaxNumberOfDrills(props.maxNumberOfDrills + 1);
+            for (let i = 0; i < craftingRecipiesArray.length; i++){
+                if(craftingRecipiesArray[i].name === name){
+                    recipie = craftingRecipiesArray[i];
+                }
+            }
+
+            console.log(recipie);
+            
+            for(let i = 0;i < items.length; i++){
+                if(items[i].name === recipie.name){
+                    if(items[i].amount >= recipie.ammount[0]){
+                        items[i].amount -= recipie.ammount[0];
+                        props.addItemToInventory({name: recipie.result, amount: 1})
+                    }else{
+                        alert('You do not have enough materials');
+                    }
+                    
+                }
+            }
+
+
+
+    
+            //update items
+            
+            //get recipie
+    
+            props.setMaxNumberOfDrills(props.maxNumberOfDrills + 1);
+        }
     }
     
 
@@ -71,7 +114,7 @@ function CraftingPlace(props: any){
                                         })
                                         
                                     }
-                                    <button onClick={handleClick(recipie.name)}>Craft</button>
+                                    <button className='smelt-button' onClick={handleClick(recipie.name)}>Smelt</button>
                                 </ul>
                             </div>
                         );

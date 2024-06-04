@@ -34,6 +34,9 @@
 }
 
 .text{
+  /* position: fixed;
+  top: -250px;
+  left: -550px; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -46,6 +49,18 @@
 
 
 
+}
+
+#inside-text{
+   position: fixed;
+  top: 70px;
+  left: 20px;
+}
+
+.market-close{
+  position: fixed;
+  top: 60px;
+  right: 150px;
 }
 
 .game-ui-drill {
@@ -147,6 +162,9 @@
 }
 
 .upgrade-menu{
+  position: fixed;
+  top: 120px;
+  left: 450px;
   width: 400px;
   height: 600px;
   background-color: rgba(0, 0, 0, 0.5);
@@ -180,6 +198,14 @@
   color: white;
 }
 
+.inventory-image-ores{
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  margin-bottom: 10px;
+
+}
+
 .upgrade-menu-close{
   position: relative;
   top: 160px;
@@ -188,6 +214,13 @@
   cursor: pointer;
 }
 
+.inventory{
+  position: fixed;
+  top: 200px;
+  left: 450px;
+  width: 400px;
+  height: 300px;
+}
 
 //INVENTORY
 .inventory-item{
@@ -208,8 +241,8 @@
   flex-direction: collumn;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: 30px;
+  height: 30px;
   font-size: 10px;
   
   color: white;

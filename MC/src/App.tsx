@@ -22,6 +22,7 @@ import { isAbsolute } from 'path'
 import { Stats } from '@react-three/drei'
 import { get } from 'http'
 import CraftingPlace from './Components/CraftingPlace'
+import Marketplace from './Components/MarketPlace'
 
 
 
@@ -128,7 +129,7 @@ function GLTFModel_Ship(props : any) {
       
         />
 
-       {openCrafting && <CraftingPlace setMaxNumberOfDrills={props.setMaxNumberOfDrills} maxNumberOfDrills={props.maxNumberOfDrills} setOpenCrafting={setOpenCrafting} cameraRef={props.cameraRef} data={[]} />}
+       {openCrafting && <CraftingPlace addItemToInventory={props.addItemToInventory} setMaxNumberOfDrills={props.setMaxNumberOfDrills} maxNumberOfDrills={props.maxNumberOfDrills} setOpenCrafting={setOpenCrafting} cameraRef={props.cameraRef} data={[]} />}
 
       </mesh>
     
@@ -330,14 +331,14 @@ function Box(props : any) {
   }
   
   function handleClick(){
-    console.log("Number of drills: " + props.numberOfDrills);
-    console.log(props.type)
+    // console.log("Number of drills: " + props.numberOfDrills);
+    // console.log(props.type)
     if(props.openShop == false && props.type !== 'Ground1' && props.type !== 'Ground2'){
     console.log(props.drillSpeed*1000);
-    if(props.numberOfDrills >= 0 && props.numberOfDrills < props.maxNumberOfDrills){
+    if(props.numberOfDrills >= 0 && props.numberOfDrills <= props.maxNumberOfDrills){
       setActive(!active);
       props.setNumberOfDrills(props.numberOfDrills + 1);
-      
+      console.log("ASDASDASDAS");
       console.log("Number of drills: " + props.numberOfDrills);
       setTimeout(() => {  
         
@@ -501,35 +502,91 @@ const App = () => {
   const Items = [
     {
       name: 'Copper',
-      amount: 0
+      amount: 0,
+      checked: false
     },
     {
       name: 'Iron',
-      amount: 0
+      amount: 0,
+      checked: false
     },
     {
       name: 'Aluminium',
-      amount: 0
+      amount: 0,
+      checked: false
     },
     {
       name: 'Gold',
-      amount: 0
-    }
+      amount: 0,
+      checked: false
+    },
+    {
+      name: 'Copper_Ingot',
+      amount: 0,
+      checked: false
+    },
+    {
+      name: 'Iron_Ingot',
+      amount: 0,
+      checked: false
+    },
+    {
+      name: 'Aluminium_Ingot',
+      amount: 0,
+      checked: false
+    },
+    {
+      name: 'Gold_Ingot',
+      amount: 0,
+      checked: false
+    },
   ];
 
+
+
   function addItemToInventory(item){
+    
+    //console.log("TEST TEST" + Items);
+
+    console.log("My added item is" + item.name);
     //add inventory in local storage
     
     let items = JSON.parse(localStorage.getItem('inventory'));
     let index = items.findIndex(x => x.name === item.name);
+    let breakSecond = false;
+    if(index === -1){
+      for(let j = 0; j < inventoryItems[0].length; j++){
+        for(let i = 0; i < inventoryItems.length; i++){
+          if(inventoryItems[i][j].name === item.name){
+            inventoryItems[i][j].amount += 1;
+            breakSecond = true;
+            break;
+          }else if(inventoryItems[i][j].name === ''){
+            inventoryItems[i][j].amount = items[index].amount;
+            inventoryItems[i][j].name = items[index].name;
+            
+            console.log("Item added");
+            breakSecond = true;
+            break;
+          }
+        }
+        if(breakSecond){
+          break;
+        }
+      }
+      console.log(inventoryItems);
+
+      
+      
+    }else{
     items[index].amount += 1;
-    localStorage.setItem('inventory',JSON.stringify(items));
+    
     console.log(items);
 
-    let breakSecond = false;
+   
 
-    for(let j = 0; j < inventoryItems.length; j++){
-      for(let i = 0; i < inventoryItems[i].length; i++){
+    for(let j = 0; j < inventoryItems[0].length; j++){
+      for(let i = 0; i < inventoryItems.length; i++){
         if(inventoryItems[i][j].name === item.name){
           inventoryItems[i][j].amount += 1;
           breakSecond = true;
@@ -547,8 +604,21 @@ const App = () => {
         break;
       }
     }
+   
+    
     console.log(inventoryItems);
+  }
 
+  for(let i = 0; i < Items.length; i++){
+    for(let j = 0; j < items.length; j++){
+      if(Items[i].name === items[j].name){
+        Items[i].amount = items[j].amount;
+      }
+    
+    }
+  }
+
+  localStorage.setItem('inventory',JSON.stringify(items));
   }
   const initialInventoryItems = Array.from({ length: 7 }, () =>
     Array.from({ length: 4 }, () => ({
@@ -556,6 +626,8 @@ const App = () => {
       amount: 0
     }))
   );
+
+  
 
   const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
 
@@ -664,6 +736,9 @@ const App = () => {
   const [multiplier_O , setMultiplier_O] = useState(0.1);
 
   const [Oxygen, setOxygen] = useState(6000);
+
+
+  const [openMarketPlace, setOpenMarketPlace] = useState(false);
 
   function upgradeOxygenTank(){
     if(gold > 100*Math.exp(multiplier_O*1.2)){
@@ -836,6 +911,15 @@ const handleKeyPress = (event) => {
   }  
   if (event.key === 'd') {
     movingRight = true;
+  }
+  if(event.key === 'i'){
+    setInventory(!inventory);
+  }
+  if(event.key === 'm'){
+    setOpenMarketPlace(!openMarketPlace);
+  }
+  if(event.key === 'u'){
+    setUpgradeMenu(!upgradeMenu);
   }
  
 
@@ -1037,33 +1121,53 @@ useEffect(() => {
 
   getLevelFromLocalStorage();
 
+  
+
   if(localStorage.getItem('inventory') == null){
     localStorage.setItem('inventory',JSON.stringify(Items));
   }
+  
+
+
 
   //Add items in inventory from local storage
 
   let items = JSON.parse(localStorage.getItem('inventory'));
+
+  
     
+  console.log("Lungimea mea este" +inventoryItems.length);
+
+  
 
     let breakSecond = false;
     for(let k = 0; k < items.length; k++){
-    for(let j = 0; j < inventoryItems.length; j++){
-      for(let i = 0; i < inventoryItems[i].length; i++){
-       if(inventoryItems[i][j].name === ''){
+    
+    for(let j = 0; j < inventoryItems[0].length; j++){
+      for(let i = 0; i < inventoryItems.length; i++){
+        if(items[k].name === inventoryItems[i][j].name){
+          items[k].checked = true;
+        }
+       if(inventoryItems[i][j].name === '' && items[k].amount > 0 && items[k].checked == false){
           inventoryItems[i][j].amount = items[k].amount;
           inventoryItems[i][j].name = items[k].name;
+          items[k].checked = true;
           
           console.log("Item added");
           breakSecond = true;
           break;
         }
       }
-      break;
+      
     }
-   
+
+    
+
+  
     
   }
+  
+    
 
   // //setLevelToLocalStorage(1);
 
@@ -1102,6 +1206,7 @@ useEffect(() => {
 
   return (
 
+    
     (alive && map) ? (
     <div className='screen'>
       
@@ -1119,18 +1224,24 @@ useEffect(() => {
         <MyCamerControls cameraPosition={cameraPosition} cameraRef={cameraRef} movingUp={movingUp} movingDown={movingDown} movingLeft={movingLeft} movingRight={movingRight} />
 
         <Html position={[cameraRef.current]}>
-        <div className='game-ui'>
-        <div id="loading-bar" className="loading-bar"></div>
-        
-        </div>
-          <div className='text'>
-            <div className='gold'>GOLD {parseInt(gold)}</div>
+
+        <div className='text'>
+          <div id='inside-text'>
+
+          <div className='gold'>GOLD {parseInt(gold)}</div>
             
             
             <div id='arrow' className="arrow-left"></div>
             <button className='upgrade-button' onClick={() => setUpgradeMenu(true)}>Upgrade</button>
             <button className='inventory-button' onClick={() => setInventory(true)}>Inventory</button>
+
           </div>
+            
+          </div>
+        <div className='game-ui'>
+        <div id="loading-bar" className="loading-bar"></div>
+        
+        </div>
 
           {upgradeMenu && (
             
@@ -1211,7 +1322,7 @@ useEffect(() => {
                             <div className='inventory-item-content'>
                               {item.name && (
                               <div className='inventory-cell'>
-                                <img src={`./Icons/${item.name}.png`} alt={item.name} />
+                                <img className='inventory-image-ores' src={`./Icons/${item.name}.png`} alt={item.name} />
                                 <h3 className='invenotry-ammount'>{item.amount}</h3>
                               </div>
                               )
@@ -1229,6 +1340,13 @@ useEffect(() => {
               <button className='inventory-close' onClick={() => setInventory(false)}>Close</button>
             </div>
           )}
+
+          {openMarketPlace && (
+            <div style={{ width: '100vw', height: '100vh' }}>
+            <Marketplace gold={gold} setGold={setGold} />
+            <button className='market-close' onClick={() => setOpenMarketPlace(false)}>Close</button>
+          </div>)
+          }
            
           
           
@@ -1248,7 +1366,7 @@ useEffect(() => {
             </group>
           ))}
 
-          <GLTFModel_Ship  maxNumberOfDrills={maxNumberOfDrills} setMaxNumberOfDrills={setMaxNumberOfDrills} cameraRef={cameraRef} position={[0,0,0]} />
+          <GLTFModel_Ship addItemToInventory={addItemToInventory} maxNumberOfDrills={maxNumberOfDrills} setMaxNumberOfDrills={setMaxNumberOfDrills} cameraRef={cameraRef} position={[0,0,0]} />
           
           
     
