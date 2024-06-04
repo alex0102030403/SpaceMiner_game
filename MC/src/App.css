@@ -60,7 +60,7 @@
 .market-close{
   position: fixed;
   top: 60px;
-  right: 150px;
+  right: 400px;
 }
 
 .game-ui-drill {
@@ -161,12 +161,45 @@
   padding: 10px;
 }
 
-.upgrade-menu{
+.inventory-close{
   position: fixed;
-  top: 120px;
-  left: 450px;
-  width: 400px;
-  height: 600px;
+  top: 200px;
+  right: 875px;
+  
+
+}
+
+.info-menu{
+  position: fixed;
+  top: 10px;
+  left: 350px;
+  width: 1000px;
+  height: 800px;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding-left: 40px;
+  padding-bottom: 10px;
+  color:white;
+}
+
+.info-menu-close{
+  position: relative;
+  top: -380px;
+  right: -0px;
+  color: black;
+  cursor: pointer;
+
+}
+
+.upgrade-menu{
+  position: relative;
+  top: 50px;
+  left: 30%;
+  width: 600px;
+  height: 650px;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -199,8 +232,8 @@
 }
 
 .inventory-image-ores{
-  width: 45px;
-  height: 45px;
+  width: 35px;
+  height: 35px;
   object-fit: cover;
   margin-bottom: 10px;
 
@@ -208,8 +241,8 @@
 
 .upgrade-menu-close{
   position: relative;
-  top: 160px;
-  right: -70px;
+  top: -300px;
+  right: -30px;
   color: black;
   cursor: pointer;
 }
@@ -251,8 +284,16 @@
 
 .invenotry-ammount{
   position: relative;
-  top: 15px;
+  top:19px;
   right: 10px;
+}
+
+#market-close-id{
+  position: fixed;
+  top: 35px;
+  right: 490px;
+  
+  
 }
   
  

@@ -16,7 +16,7 @@ import { TextureLoader } from 'three/src/loaders/TextureLoader.js'
 import Login from './Login'
 import LoginComponent from './Login'
 import { Outlet, useLocation } from 'react-router-dom';
-import { cameraFar, cameraPosition, min, mul } from 'three/examples/jsm/nodes/Nodes.js'
+import { cameraFar, cameraPosition, func, min, mul } from 'three/examples/jsm/nodes/Nodes.js'
 import e from 'express'
 import { isAbsolute } from 'path'
 import { Stats } from '@react-three/drei'
@@ -550,8 +550,26 @@ const App = () => {
 
     console.log("My added item is" + item.name);
     //add inventory in local storage
+
+
     
     let items = JSON.parse(localStorage.getItem('inventory'));
+
+    if(item.name === 'Copper_Ingot'){
+      for(let i = 0; i < items.length; i++){
+        if(items[i].name === 'Copper'){
+          items[i].amount -= 10;
+        }
+      }
+      for(let j = 0; j < inventoryItems[0].length; j++){
+        for(let i = 0; i < inventoryItems.length; i++){
+          if(inventoryItems[i][j].name === 'Copper'){
+            inventoryItems[i][j].amount -= 10;
+          }
+        }
+    }
+  }
+
     let index = items.findIndex(x => x.name === item.name);
     let breakSecond = false;
     if(index === -1){
@@ -664,6 +682,17 @@ const App = () => {
     setLevelToLocalStorage(newLevel);
   }
 
+  function upgradeDrillsNumber(){
+    if(gold > 100*Math.exp(multiplier_Drills*1.2)*10){
+      let newMultiplier = Math.exp(multiplier_Drills);
+      setMultiplier_Drills(multiplier_Drills + 0.1);
+      setMaxNumberOfDrills(maxNumberOfDrills + 1);
+      setGold(gold - 100*Math.exp(multiplier_Drills*1.2)*10);
+    }else{
+      console.log("Not enough gold");
+    }
+  }
+
   function resetLevel(){
     setLevelUpgradeCost(1000*levelUpgradeCostMultiplier);
     console.log("Reset level");
@@ -735,10 +764,14 @@ const App = () => {
 
   const [multiplier_O , setMultiplier_O] = useState(0.1);
 
+  const [multiplier_Drills , setMultiplier_Drills] = useState(0.1);
+
   const [Oxygen, setOxygen] = useState(6000);
 
 
   const [openMarketPlace, setOpenMarketPlace] = useState(false);
+
+  const [openInfoMenu, setOpenInfoMenu] = useState(false);
 
   function upgradeOxygenTank(){
     if(gold > 100*Math.exp(multiplier_O*1.2)){
@@ -834,6 +867,20 @@ const App = () => {
     }
  
 
+    const handleMarketPlace =()=>{
+      setOpenMarketPlace(!openMarketPlace);
+      if(openMarketPlace){
+        document.getElementById('marketplace-container').style.top = '-410px';
+        document.getElementById('market-close-id').style.top = '30px';
+        
+      }else{
+        document.getElementById('marketplace-container').style.top = '4000px';
+        document.getElementById('market-close-id').style.top = '3000px';
+        
+      }
+    }
+    
+
 const handleKeyPress = (event) => {
 
 
@@ -916,10 +963,16 @@ const handleKeyPress = (event) => {
     setInventory(!inventory);
   }
   if(event.key === 'm'){
-    setOpenMarketPlace(!openMarketPlace);
+    handleMarketPlace();
   }
   if(event.key === 'u'){
     setUpgradeMenu(!upgradeMenu);
+  }
+  //checl escape
+  if(event.key === 'Escape'){
+    setOpenInfoMenu(!openInfoMenu);
+    setUpgradeMenu(false);
+    setInventory(false);
   }
  
 
@@ -1232,8 +1285,8 @@ useEffect(() => {
             
             
             <div id='arrow' className="arrow-left"></div>
-            <button className='upgrade-button' onClick={() => setUpgradeMenu(true)}>Upgrade</button>
-            <button className='inventory-button' onClick={() => setInventory(true)}>Inventory</button>
+            {/* <button className='upgrade-button' onClick={() => setUpgradeMenu(true)}>Upgrade</button>
+            <button className='inventory-button' onClick={() => setInventory(true)}>Inventory</button> */}
 
           </div>
             
@@ -1287,16 +1340,18 @@ useEffect(() => {
                     )
                  }
 
-                  <div className='upgrade-menu-content-item'>
-                    <h2>Reset Level</h2>
-                    <div className='upgrade-menu-content-item-cost'>
-                      <h3>Cost: {parseInt(levelUpgradeCost.toString())}</h3>
-                    </div>
-                    <button onClick={resetLevel} className='upgrade-menu-content-item-button'>Upgrade</button>
-                  </div>
+                  
 
                   <div className='upgrade-menu-content-item'>
                     <h2>Drills Owned : {maxNumberOfDrills}</h2>
+                    <div className='upgrade-menu-content-item-cost'>
+                      <h3>Cost: {parseInt((100*Math.exp(multiplier_Drills*1.2)*10).toString())}</h3>
+                    </div>
+                    <button onClick={upgradeDrillsNumber} className='upgrade-menu-content-item-button'>Upgrade</button>
+                  </div>
+
+                  <div className='upgrade-menu-content-item'>
+                    <h2>Reset Level</h2>
                     <div className='upgrade-menu-content-item-cost'>
                       <h3>Cost: {parseInt(levelUpgradeCost.toString())}</h3>
                     </div>
@@ -1312,6 +1367,7 @@ useEffect(() => {
           )}
 
           {inventory && (
+            <div>
             <div className='inventory'>
               <div className='inventory-content'>
                   {inventoryItems.map((row, rowIndex) => (
@@ -1337,18 +1393,53 @@ useEffect(() => {
                   
                 
               </div>
-              <button className='inventory-close' onClick={() => setInventory(false)}>Close</button>
+              <div>
+              
+              </div>
+              
+              
+            </div>
+            <button className='inventory-close' onClick={() => setInventory(false)}>Close</button>
             </div>
           )}
 
-          {openMarketPlace && (
+          {(
             <div style={{ width: '100vw', height: '100vh' }}>
             <Marketplace gold={gold} setGold={setGold} />
-            <button className='market-close' onClick={() => setOpenMarketPlace(false)}>Close</button>
+            <button className='market-close' id='market-close-id' onClick={() => handleMarketPlace()}>Close</button>
           </div>)
           }
            
-          
+           {openInfoMenu && (
+            
+            <div className='info-menu'>
+              <div className='upgrade-menu-content'>
+                <h1>Info</h1>
+                  <div className='upgrade-menu-content'>
+                    <h2>---------------------------------</h2>
+                    <h2>Controls</h2>
+
+                      <h3>ESC --- Opens Info Menu</h3>
+                      <h3>U --- Opens Upgrade Menu</h3>
+                      <h3>I --- Opens Inventory</h3>
+                      <h3>M --- Opens Marketplace</h3>
+                      <h3>Movement is on W-A-S-D</h3>
+                      <h3>Click on the Base to access the forge</h3>
+
+                    <h2>---------------------------------</h2>
+
+                    <h2>How to play</h2>
+
+                      <h3>You have a Oxygen bar on the top left of your screen, if your run out of oxygen you will die</h3>
+                      <h3>You have to mine ores by clicking on them, you get a small ammount of money when you mine them and the real money are made in the MarketPlace, Smelt ores and get rich</h3>
+                      <h3>You have to survive through a series of planets, each planet having new adventures prepared for you, upgrade your utilities and good luck</h3>
+                    
+
+                  </div>
+              </div>
+              <button className='info-menu-close' onClick={() => setOpenInfoMenu(false)}>Close</button>
+            </div>
+          )}
           
         </Html>
         

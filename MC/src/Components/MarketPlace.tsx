@@ -12,12 +12,46 @@ interface Item {
   upperBound: number;
 }
 
-const initialItems: Item[] = [
-  { name: 'Copper', value: 50, priceHistory: [], lowerBound: 20, upperBound: 100 },
-  { name: 'Iron', value: 100, priceHistory: [], lowerBound: 50, upperBound: 200 },
-  { name: 'Aluminium', value: 150, priceHistory: [], lowerBound: 80, upperBound: 250 },
-  { name: 'Gold', value: 200, priceHistory: [], lowerBound: 150, upperBound: 300 },
-];
+const perLevelMoney = {
+    1: 1,
+    2: 2,
+    3: 5,
+    4: 10,
+    5: 20,
+    6: 45,
+    7: 100,
+    8: 225,
+    9: 500,
+    10: 1500
+  }
+
+  const oresValue = {
+    0: 50,
+    1: 100,
+    2: 150,
+    3: 200
+  }
+
+  
+
+
+  const getInitialItems = (level: number): Item[] => {
+    
+    const multiplier = parseInt(perLevelMoney[level]) || 1; // Default to 1 if level is not defined
+    
+    return [
+        { name: 'Copper', value: 50 * multiplier, priceHistory: [], lowerBound: oresValue[0] / 3 * multiplier, upperBound: oresValue[0] * 5 * multiplier },
+        { name: 'Iron', value: 100 * multiplier, priceHistory: [], lowerBound: oresValue[1] / 3 * multiplier, upperBound: oresValue[1] * 5 * multiplier },
+        { name: 'Aluminium', value: 150 * multiplier, priceHistory: [], lowerBound: oresValue[2] / 3 * multiplier, upperBound: oresValue[2] * 5 * multiplier },
+        { name: 'Gold', value: 200 * multiplier, priceHistory: [], lowerBound: oresValue[3] / 3 * multiplier, upperBound: oresValue[3] * 5 * multiplier },
+    ];
+};
+
+
+
+
+
+
 
 const getWeatherFactor = () => {
   const weather = ['sunny', 'cloudy', 'rainy'];
@@ -48,7 +82,16 @@ const getCorrectionFactor = (value: number, lowerBound: number, upperBound: numb
   return 1.0; // No correction needed if within safe range
 };
 
+let level = localStorage.getItem('level');
+
+
+
+
 const Marketplace: React.FC = ( props:any ) => {
+
+let initialItems = getInitialItems(parseInt(level));
+console.log("Level: " + level); 
+
   const [items, setItems] = useState<Item[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [timeRange, setTimeRange] = useState('minutes');
@@ -56,11 +99,32 @@ const Marketplace: React.FC = ( props:any ) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
+        let newlevel = localStorage.getItem('level');
+        if(newlevel !== level){
+        level = newlevel;
+        setItems(getInitialItems(parseInt(level)));
+        console.log(items[0].upperBound);
+        }
+    }, 1000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+}, []);
+
+  useEffect(() => {
+
+    
+
+    const interval = setInterval(() => {
       const weatherFactor = getWeatherFactor();
       const timeOfDayFactor = getTimeOfDayFactor();
 
+
+
       setItems(items =>
         items.map(item => {
+
+            
+            
           const spikeFactor = Math.random() > 0.998 ? 1.25 : 1; // 5% chance of a spike
           const negativeSpikeFactor = Math.random() > 0.998 ? 0.5 : 1; // 5% chance of a negative spike
 
@@ -100,7 +164,7 @@ const Marketplace: React.FC = ( props:any ) => {
     }, 2000); // Update every 5 seconds
 
     return () => clearInterval(interval);
-  }, [cycle]);
+  }, [cycle,level]);
 
   const sellItem = (itemName: string, itemValue: number) => {
 
@@ -139,7 +203,7 @@ const Marketplace: React.FC = ( props:any ) => {
       <ambientLight />
       <pointLight position={[10, 10, 10]} />
       <Html>
-        <div className="marketplace-container">
+        <div id="marketplace-container">
           <div className="marketplace">
             {items.map((item, index) => (
               <div key={index} className="card">
