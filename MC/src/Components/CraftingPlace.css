@@ -1,0 +1,85 @@
+.main-container{
+    position: fixed; /* Keeps the div fixed in the viewport */
+    top: 50%; /* Positions the top edge of the element at the vertical center */
+    left: 50%; /* Positions the left edge of the element at the horizontal center */
+    transform: translate(-50%, -50%); /* Translates the element -50% of its own width and height, effectively centering it */
+    width: 605px;
+  height: 380px;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: row;
+  
+}
+.title-recipie{
+    position: relative;
+    top: -10px;
+    left: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(255, 0, 0, 0.5);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+
+}
+
+.li-elements{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    
+    height: 60px;
+    background-color: rgba(0, 0, 255, 0.5);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+}
+
+.recipie-container{
+    display: flex;
+    flex-direction: row;
+    
+    
+    background-color: rgba(0, 0, 255, 0.5);
+    margin: 10px;
+    
+}
+
+.inside-recipies{
+    position: relative;
+    top: 47px;
+    left: -30px;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    width: 100%;
+    height: 100%;
+   
+    
+
+}
+
+.close-button{
+    
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    
+}

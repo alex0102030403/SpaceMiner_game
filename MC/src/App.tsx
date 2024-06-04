@@ -21,6 +21,7 @@ import e from 'express'
 import { isAbsolute } from 'path'
 import { Stats } from '@react-three/drei'
 import { get } from 'http'
+import CraftingPlace from './Components/CraftingPlace'
 
 
 
@@ -46,13 +47,13 @@ function GLTFModel(props : any) {
       let color;
       if (props.type === 'ground1') {
         color = 'brown';
-      } else if (props.type === 'Uncommon') {
-        color = 'green';
-      } else if (props.type === 'Rare') {
-        color = 'blue';
-      } else if (props.type === 'Epic') {
+      } else if (props.type === 'Copper') {
+        color = 'brown';
+      } else if (props.type === 'Iron') {
+        color = 'grey';
+      } else if (props.type === 'Aluminium') {
         color = 'purple';
-      } else if (props.type === 'Legendary') {
+      } else if (props.type === 'Gold') {
         color = 'orange';
       }
 
@@ -83,23 +84,60 @@ function GLTFModel_Ship(props : any) {
 
   const gltf = useLoader(GLTFLoader, 'Space/Cargo Depot.glb');
 
+  
+  //const gltf2 = useLoader(GLTFLoader, 'Space/SpaceShip.glb');
+
+  const [openCrafting, setOpenCrafting] = useState(false);
+  
+
+  const [hover, setHover] = useState(false);
+
+  function handlePointerOver(event){
+    gltf.scene.scale.set(1, 1, 1);
+    console.log("Hover");
+    setHover(true);
+  }
+
+  function handlePointerOut(event){
+    console.log("Hover out");
+    gltf.scene.scale.set(0.85, 0.85, 0.85);
+    setHover(false);
+  }
+
+  function handleClick(event){
+    console.log("Clicked");
+    setOpenCrafting(true);
+  }
+
+
   return (
     
     
-      <group >
-        <Html position={[gltf.scene.position.x-0.2,gltf.scene.position.y+1.45,gltf.scene.position.z-0.2]}>
+      <mesh  onPointerOver={(event) => handlePointerOver(event)}
+             onPointerOut={(event) => handlePointerOut(event)}
+             onClick={(event) => handleClick(event)}
+             > 
+             
+        {/* <Html position={[gltf.scene.position.x-0.2,gltf.scene.position.y+1.45,gltf.scene.position.z-0.2]}>
           <div className='text'>
-            <h1>Main Base</h1>
+            <h3>Main Base</h3>
           </div>
-        </Html>
-        <primitive ref={modelRef} object={gltf.scene} />
-      </group>
+        </Html> */}
+        
+        <primitive ref={modelRef} object={gltf.scene}
+      
+        />
+
+       {openCrafting && <CraftingPlace setMaxNumberOfDrills={props.setMaxNumberOfDrills} maxNumberOfDrills={props.maxNumberOfDrills} setOpenCrafting={setOpenCrafting} cameraRef={props.cameraRef} data={[]} />}
+
+      </mesh>
     
   
 )
 
 }
 
+//Maybe Delete
 function GLTFModel_Arrow(props : any) {
 
   const arrow_ref = useRef();
@@ -158,13 +196,13 @@ function GLTFModel_Buildings(props : any) {
       let color;
       if (props.type === 'ground1' || props.type === 'ground2') {
         color = 'brown';
-      } else if (props.type === 'Uncommon') {
-        color = 'green';
-      } else if (props.type === 'Rare') {
-        color = 'blue';
-      } else if (props.type === 'Epic') {
+      } else if (props.type === 'Copper') {
+        color = 'brown';
+      } else if (props.type === 'Iron') {
+        color = 'grey';
+      } else if (props.type === 'Aluminium') {
         color = 'purple';
-      } else if (props.type === 'Legendary') {
+      } else if (props.type === 'Gold') {
         color = 'orange';
       }
 
@@ -222,13 +260,13 @@ function getRockType(chance : number){
   let randomizer = Math.random()*10000;
 
   if(randomizer < 3*chance){
-    return 'Legendary';
+    return 'Gold';
   }else if(randomizer < 10*chance && randomizer > 3*chance){
-    return 'Epic';
+    return 'Aluminium';
   }else if(randomizer < 30*chance && randomizer > 10*chance){
-    return 'Rare';
+    return 'Iron';
   }else if(randomizer < 100*chance && randomizer > 30*chance){
-    return 'Uncommon';
+    return 'Copper';
   }else{
     return Math.random()*100 > 50 ? 'Ground1' : 'Ground2';
   }
@@ -285,19 +323,22 @@ function Box(props : any) {
   
   const goldTypeValue = {
     
-    'Uncommon': 2 * props.moneyMultiplier * perLevelMoney[props.level],
-    'Rare': 3 * props.moneyMultiplier * perLevelMoney[props.level],
-    'Epic': 4 * props.moneyMultiplier * perLevelMoney[props.level],
-    'Legendary': 5 * props.moneyMultiplier * perLevelMoney[props.level]
+    'Copper': 2 * props.moneyMultiplier * perLevelMoney[props.level],
+    'Iron': 3 * props.moneyMultiplier * perLevelMoney[props.level],
+    'Aluminium': 4 * props.moneyMultiplier * perLevelMoney[props.level],
+    'Gold': 5 * props.moneyMultiplier * perLevelMoney[props.level]
   }
   
   function handleClick(){
+    console.log("Number of drills: " + props.numberOfDrills);
     console.log(props.type)
     if(props.openShop == false && props.type !== 'Ground1' && props.type !== 'Ground2'){
     console.log(props.drillSpeed*1000);
-    if(props.numberOfDrills === 0){
+    if(props.numberOfDrills >= 0 && props.numberOfDrills < props.maxNumberOfDrills){
       setActive(!active);
-      props.setNumberOfDrills(1);
+      props.setNumberOfDrills(props.numberOfDrills + 1);
+      
+      console.log("Number of drills: " + props.numberOfDrills);
       setTimeout(() => {  
         
         setMined(true);
@@ -307,9 +348,14 @@ function Box(props : any) {
         console.log("New Gold: " + newGold);
         props.setGold(newGold_int);
         console.log("Gold: " + props.gold);
+
+        //add items in inventory
+        props.addItemToInventory({name: props.type});
+        //console.log(props.Items);
         
         
         props.setNumberOfDrills(0);
+        console.log("Number of drills: " + props.numberOfDrills);
       }, props.drillSpeed*1000); 
     }
   }else{
@@ -410,7 +456,7 @@ function MyCamerControls(props : any){
     document.addEventListener('keyup',handleKeyRelease);
     document.addEventListener('keydown',handleKeyDown);
     
-    console.log(movingUp + " " + movingDown + " " + movingLeft + " " + movingRight)
+    //console.log(movingUp + " " + movingDown + " " + movingLeft + " " + movingRight)
 
     if(movingUp){
       props.cameraPosition.current.z -= 0.03;
@@ -451,6 +497,67 @@ function MyCamerControls(props : any){
 
 
 const App = () => {
+
+  const Items = [
+    {
+      name: 'Copper',
+      amount: 0
+    },
+    {
+      name: 'Iron',
+      amount: 0
+    },
+    {
+      name: 'Aluminium',
+      amount: 0
+    },
+    {
+      name: 'Gold',
+      amount: 0
+    }
+  ];
+
+  function addItemToInventory(item){
+    //add inventory in local storage
+    
+    let items = JSON.parse(localStorage.getItem('inventory'));
+    let index = items.findIndex(x => x.name === item.name);
+    items[index].amount += 1;
+    localStorage.setItem('inventory',JSON.stringify(items));
+    console.log(items);
+
+    let breakSecond = false;
+
+    for(let j = 0; j < inventoryItems.length; j++){
+      for(let i = 0; i < inventoryItems[i].length; i++){
+        if(inventoryItems[i][j].name === item.name){
+          inventoryItems[i][j].amount += 1;
+          breakSecond = true;
+          break;
+        }else if(inventoryItems[i][j].name === ''){
+          inventoryItems[i][j].amount = items[index].amount;
+          inventoryItems[i][j].name = items[index].name;
+          
+          console.log("Item added");
+          breakSecond = true;
+          break;
+        }
+      }
+      if(breakSecond){
+        break;
+      }
+    }
+    console.log(inventoryItems);
+
+  }
+  const initialInventoryItems = Array.from({ length: 7 }, () =>
+    Array.from({ length: 4 }, () => ({
+      name: '',
+      amount: 0
+    }))
+  );
+
+  const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
 
   const [level, setLevel] = useState(1);
 
@@ -507,6 +614,8 @@ const App = () => {
 
   const [map, setMap] = useState(false);
 
+  const [maxNumberOfDrills , setMaxNumberOfDrills] = useState(1);
+
 
   //this should be saved in localStorage and maybe in database (database weak chances)
 
@@ -534,7 +643,7 @@ const App = () => {
     }
   }
 
-
+  const [inventory, setInventory] = useState(false);
 
   const [numberOfDrills, setNumberOfDrills] = useState(0);
 
@@ -904,7 +1013,7 @@ function initializeCameraPosition(){
           row.push({
             position: [i, 0, j],
             key: `${i}-${j}`,
-            type: 'legendary',
+            type: 'Copper',
             
           });
         }else{
@@ -927,6 +1036,34 @@ useEffect(() => {
   setLevelToLocalStorage(parseInt(getLevelFromLocalStorage()));
 
   getLevelFromLocalStorage();
+
+  if(localStorage.getItem('inventory') == null){
+    localStorage.setItem('inventory',JSON.stringify(Items));
+  }
+
+  //Add items in inventory from local storage
+
+  let items = JSON.parse(localStorage.getItem('inventory'));
+    
+
+    let breakSecond = false;
+    for(let k = 0; k < items.length; k++){
+    for(let j = 0; j < inventoryItems.length; j++){
+      for(let i = 0; i < inventoryItems[i].length; i++){
+       if(inventoryItems[i][j].name === ''){
+          inventoryItems[i][j].amount = items[k].amount;
+          inventoryItems[i][j].name = items[k].name;
+          
+          console.log("Item added");
+          breakSecond = true;
+          break;
+        }
+      }
+      break;
+    }
+   
+    
+  }
 
   // //setLevelToLocalStorage(1);
 
@@ -988,11 +1125,15 @@ useEffect(() => {
         </div>
           <div className='text'>
             <div className='gold'>GOLD {parseInt(gold)}</div>
+            
+            
             <div id='arrow' className="arrow-left"></div>
             <button className='upgrade-button' onClick={() => setUpgradeMenu(true)}>Upgrade</button>
+            <button className='inventory-button' onClick={() => setInventory(true)}>Inventory</button>
           </div>
 
           {upgradeMenu && (
+            
             <div className='upgrade-menu'>
               <div className='upgrade-menu-content'>
                 <h1>Upgrade Menu</h1>
@@ -1043,6 +1184,14 @@ useEffect(() => {
                     <button onClick={resetLevel} className='upgrade-menu-content-item-button'>Upgrade</button>
                   </div>
 
+                  <div className='upgrade-menu-content-item'>
+                    <h2>Drills Owned : {maxNumberOfDrills}</h2>
+                    <div className='upgrade-menu-content-item-cost'>
+                      <h3>Cost: {parseInt(levelUpgradeCost.toString())}</h3>
+                    </div>
+                    <button onClick={resetLevel} className='upgrade-menu-content-item-button'>Upgrade</button>
+                  </div>
+
                  
 
                 </div>
@@ -1050,6 +1199,38 @@ useEffect(() => {
               <button className='upgrade-menu-close' onClick={() => setUpgradeMenu(false)}>Close</button>
             </div>
           )}
+
+          {inventory && (
+            <div className='inventory'>
+              <div className='inventory-content'>
+                  {inventoryItems.map((row, rowIndex) => (
+                    <div key={rowIndex} className='inventory-row'>
+                      {row.map((item, itemIndex) => (
+                        <div key={itemIndex} className='inventory-item'>
+                          {true && (
+                            <div className='inventory-item-content'>
+                              {item.name && (
+                              <div className='inventory-cell'>
+                                <img src={`./Icons/${item.name}.png`} alt={item.name} />
+                                <h3 className='invenotry-ammount'>{item.amount}</h3>
+                              </div>
+                              )
+                              }
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))  
+                  }
+                  
+                
+              </div>
+              <button className='inventory-close' onClick={() => setInventory(false)}>Close</button>
+            </div>
+          )}
+           
+          
           
         </Html>
         
@@ -1062,12 +1243,12 @@ useEffect(() => {
           {initialMatrix && initialMatrix.map((row, rowIndex) => (
             <group key={rowIndex}>
               {row.map((boxProps) => (
-                <Box key={boxProps.key} level={level} drillSpeed={drillSpeed} {...boxProps} cameraPos={cameraPosition} openShop={upgradeMenu} moneyMultiplier={moneyMultiplier} gold={gold} setGold={setGold} setNumberOfDrills={setNumberOfDrills} numberOfDrills={numberOfDrills}/>
+                <Box key={boxProps.key} maxNumberOfDrills={maxNumberOfDrills} addItemToInventory={addItemToInventory} Items={Items} level={level} drillSpeed={drillSpeed} {...boxProps} cameraPos={cameraPosition} openShop={upgradeMenu} moneyMultiplier={moneyMultiplier} gold={gold} setGold={setGold} setNumberOfDrills={setNumberOfDrills} numberOfDrills={numberOfDrills}/>
               ))}
             </group>
           ))}
 
-          <GLTFModel_Ship position={[0,0,0]} />
+          <GLTFModel_Ship  maxNumberOfDrills={maxNumberOfDrills} setMaxNumberOfDrills={setMaxNumberOfDrills} cameraRef={cameraRef} position={[0,0,0]} />
           
           
     
